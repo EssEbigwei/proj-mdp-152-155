@@ -2,15 +2,14 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "appsbyess/webappcal:latest"
+        IMAGE_NAME = "appsbyess/webappcal"
         CONTAINER_NAME = "webapp-container"
-        PORT = "9090"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: ‘project-1', url: 'https://github.com/EssEbigwei/proj-mdp-152-155.git'
+                git branch: 'project-1', url: 'https://github.com/EssEbigwei/proj-mdp-152-155.git'
             }
         }
 
@@ -26,7 +25,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh 'docker build -t $IMAGE_NAME:latest .'
             }
         }
 
@@ -34,7 +33,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push $IMAGE_NAME'
+                    sh 'docker push $IMAGE_NAME:latest'
                 }
             }
         }
@@ -43,7 +42,7 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f $CONTAINER_NAME || true
-                    docker run -d --name $CONTAINER_NAME -p 9090:8080 $IMAGE_NAME
+                    docker run -d --name $CONTAINER_NAME -p 9090:8080 $IMAGE_NAME:latest
                 '''
             }
         }
